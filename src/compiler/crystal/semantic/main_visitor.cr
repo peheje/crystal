@@ -361,7 +361,11 @@ module Crystal
         end
 
         if meta_var.closured?
-          var.bind_to(meta_var)
+          unless var.bound_to?(meta_var)
+            var.bind_to(meta_var)
+          end
+        else
+          meta_var.local_vars << var
         end
 
         node.bind_to(var)
@@ -798,7 +802,11 @@ module Crystal
       simple_var.bind_to(target)
 
       if meta_var.closured?
-        simple_var.bind_to(meta_var)
+        unless simple_var.bound_to? meta_var
+          simple_var.bind_to(meta_var)
+        end
+      else
+        meta_var.local_vars << simple_var
       end
 
       @vars[var_name] = simple_var
@@ -3127,6 +3135,17 @@ module Crystal
           # to the context where the variable is defined
           visitor = self
           while visitor
+            # Grab the meta var in the visitor's scope and bind all
+            # its local vars to it. This is a fix for #5609.
+            meta_var = visitor.meta_vars[var.name]?
+            if meta_var
+              meta_var.local_vars?.try &.each do |local_var|
+                unless local_var.bound_to? local_var
+                  local_var.bind_to meta_var
+                end
+              end
+            end
+
             visitor_context = visitor.closure_context
             break if visitor_context == var_context
 
