@@ -272,6 +272,27 @@ LLVMMetadataRef LLVMExtDIBuilderCreateReplaceableCompositeType(
   return wrap(CT);
 }
 
+LLVMMetadataRef LLVMExtDIBuilderCreateUnspecifiedType(
+  DIBuilderRef Dref, const char *Name, size_t NameLen) {
+#if LLVM_VERSION_GE(7, 0)
+  return LLVMDIBuilderCreateUnspecifiedType(wrap(Dref), Name, NameLen);
+#else
+  return wrap(Dref->createUnspecifiedType({Name, NameLen}));
+#endif
+}
+
+LLVMMetadataRef LLVMExtDIBuilderCreateLexicalBlockFile(
+  DIBuilderRef Dref,
+  LLVMMetadataRef Scope, LLVMMetadataRef File, unsigned Discriminator) {
+#if LLVM_VERSION_GE(7, 0)
+  return LLVMDIBuilderCreateLexicalBlockFile(wrap(Dref), Scope, File, Discriminator);
+#else
+  return wrap(Dref->createLexicalBlockFile(unwrapDI<DIScope>(Scope),
+                                           unwrapDI<DIFile>(File),
+                                           Discriminator));
+#endif
+}
+
 void LLVMExtDIBuilderReplaceTemporary(
   DIBuilderRef Dref, LLVMMetadataRef From, LLVMMetadataRef To) {
   auto *Node = unwrap<MDNode>(From);
@@ -461,7 +482,7 @@ char *LLVMExtBasicBlockName(LLVMBasicBlockRef BB) {
 }
 
 LLVMMetadataRef LLVMExtDIBuilderGetOrCreateArraySubrange(
-  DIBuilderRef Dref, uint64_t Lo, 
+  DIBuilderRef Dref, uint64_t Lo,
   uint64_t Count) {
     return wrap(Dref->getOrCreateSubrange(Lo, Count));
 }
