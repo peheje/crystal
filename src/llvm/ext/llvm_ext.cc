@@ -272,25 +272,19 @@ LLVMMetadataRef LLVMExtDIBuilderCreateReplaceableCompositeType(
   return wrap(CT);
 }
 
+// LLVM 7.0 LLVMDIBuilderCreateUnspecifiedType
 LLVMMetadataRef LLVMExtDIBuilderCreateUnspecifiedType(
   DIBuilderRef Dref, const char *Name, size_t NameLen) {
-#if LLVM_VERSION_GE(7, 0)
-  return LLVMDIBuilderCreateUnspecifiedType(wrap(Dref), Name, NameLen);
-#else
   return wrap(Dref->createUnspecifiedType({Name, NameLen}));
-#endif
 }
 
+// LLVM 7.0 LLVMDIBuilderCreateLexicalBlockFile
 LLVMMetadataRef LLVMExtDIBuilderCreateLexicalBlockFile(
   DIBuilderRef Dref,
   LLVMMetadataRef Scope, LLVMMetadataRef File, unsigned Discriminator) {
-#if LLVM_VERSION_GE(7, 0)
-  return LLVMDIBuilderCreateLexicalBlockFile(wrap(Dref), Scope, File, Discriminator);
-#else
   return wrap(Dref->createLexicalBlockFile(unwrapDI<DIScope>(Scope),
                                            unwrapDI<DIFile>(File),
                                            Discriminator));
-#endif
 }
 
 void LLVMExtDIBuilderReplaceTemporary(
